@@ -1,0 +1,36 @@
+﻿body {
+    font-size: 14px;
+}
+
+table {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 5px;
+}
+
+#header {
+    background-color: #222;
+    color: #eee;
+}
+
+thead tr, tbody tr {
+    border-bottom: 1px solid black;
+}
+
+tbody tr:hover {
+    background-color: lightgray;
+}
+
+.full_width {
+    min-width: 800px;
+    }
+
+.half_width {
+    min-width: 350px;
+}
+
+div{
+    margin-bottom: 30px;
+}

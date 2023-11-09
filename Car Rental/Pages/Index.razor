@@ -1,0 +1,155 @@
+﻿@page "/"
+@using Car_Rental.Business.Classes;
+@using Car_Rental.Common.Enums;
+@using Car_Rental.Data.Classes;
+@inject BookingProcessor bp;
+
+<link rel="stylesheet" type="text/css" href="css/main.css">
+
+<h1>Car Rental Assignment - VG</h1>
+
+<!-- Alert -->
+@if(bp.message != String.Empty)
+{
+    <div class="alert alert-danger">
+        <strong>@bp.message</strong>
+    </div>
+}
+
+<!-- Vehicles -->
+<div>
+    Vehicles
+    <table class="full_width">
+        <tr id="header">
+            <th>RegNo</th>
+            <th>Make</th>
+            <th>Odometer</th>
+            <th>Cost Km</th>
+            <th>Vehicle Type</th>
+            <th>$ Day</th>
+            <th>Action</th>
+            <th>Status</th>
+        </tr>
+        <tr id="vehicle">
+            <td><input @bind=bp.regNr size="6" placeholder="RegNo" disabled="@bp.processing" /></td>
+            <td><input @bind=bp.make size="6" placeholder="Make" disabled="@bp.processing" /></td>
+            <td><input @bind=bp.odometer size="6" placeholder="0" disabled="@bp.processing" /></td>
+            <td><input @bind=bp.costPerKm size="6" placeholder="0" disabled="@bp.processing" /></td>
+            <td>
+                <select @bind=bp.vehicleType disabled="@bp.processing">
+                    @foreach (var vehicle in bp.VehicleTypeNames)
+                    {
+                        <option value="@vehicle">@vehicle</option>
+                    }
+                </select>
+            </td>
+            <td></td>
+            <td><button @onclick="(() => bp.AddVehicle(bp.regNr, bp.make, bp.odometer, bp.costPerKm, bp.vehicleType))" disabled="@bp.processing">Add</button></td>
+            <td>
+                @if (bp.processing)
+                {
+                    <span class="badge rounded-pill bg-warning">
+                        processing
+                    </span>
+                }
+            </td>
+        </tr>
+        @foreach (var vehicle in bp.GetVehicles())
+        {
+            <tr>
+                <th>@vehicle.RegistrationNumber</th>
+                <td>@vehicle.Make</td>
+                <td>@vehicle.Odometer</td>
+                <td>@vehicle.CostPerKm</td>
+                <td>@vehicle.VehicleType</td>
+                <td>@vehicle.CostPerDay</td>
+                <td>
+                    @if (vehicle.Status == VehicleStatuses.Booked)
+                    {
+                        <input @bind="bp.distance" size="6" placeholder="Distance" disabled="@bp.processing" />
+                        <button @onclick="(() => bp.ReturnVehicle(vehicle.Id, bp.distance))" disabled="@bp.processing">Return</button>
+                    }
+                    else
+                    { 
+                        <select @bind=bp.customerId disabled="@bp.processing">
+                            @foreach (var customer in bp.GetCustomers())
+                            {
+                                <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.SocialSecurityNumber)</option>
+                            }
+                        </select>
+                         <button @onclick="(() => bp.RentVehicle(vehicle.Id, bp.customerId))" disabled="@bp.processing">Rent</button> 
+                     }
+                </td>
+                <td>
+                    <span class="badge rounded-pill @(vehicle.Status == @VehicleStatuses.Available ? "bg-black" : "bg-danger")">@vehicle.Status
+                    </span>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+<!-- Bookings -->
+<div>
+    Bookings
+    <table class="full_width">
+        <thead>
+        <tr id="header">
+            <th>RegNo</th>
+            <th>Customer</th>
+            <th>Km Rented</th>
+            <th>Km Returned</th>
+            <th>Rented</th>
+            <th>Returned</th>
+            <th>Cost</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var booking in bp.GetBookings())
+        {
+            <tr>
+                <th>@booking.RegistrationNumber</th>
+                <td>@booking.Customer</td>
+                <td>@booking.OdometerRented</td>
+                <td>@(booking.Status.Equals(BookingStatuses.Closed) ? booking.OdometerReturned : "")</td>
+                    <td>@booking.DateRented.ToShortDateString()</td>
+                <td>@(booking.Status.Equals(BookingStatuses.Closed) ? booking.DateReturned.ToShortDateString() : "")</td>
+                <td>@(booking.Status.Equals(BookingStatuses.Closed) ? booking.Cost : "")</td>
+                <td class="position-relative">
+                        <span class="badge rounded position-absolute top-50 start-50 translate-middle @(booking.Status == BookingStatuses.Open ? "bg-success" : "bg-danger")">@booking.Status
+                        </span>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+<!-- Customers -->
+<div>
+    Customers
+    <table class="half_width">
+        <thead>
+            <tr id="header">
+                <th>SSN</th>
+                <th>First Name</th>
+                <th>Last Name</th> 
+            </tr>
+            <tr>
+                <td><input size="12" @bind=bp.ssn placeholder="SSN" /></td>
+                <td><input size="12" @bind=bp.firstName placeholder ="First Name" /></td>
+                <td><input size="12" @bind=bp.lastName placeholder="Last Name" />
+                <button @onclick="() => bp.AddCustomer(bp.ssn, bp.firstName, bp.lastName)">Add</button></td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var person in bp.GetCustomers())
+            {
+                    <tr>
+                        <th>@person.SocialSecurityNumber</th>
+                        <td>@person.FirstName</td>
+                        <td>@person.LastName</td>
+                    </tr>
+            }
+        </tbody>
+    </table>
+</div>
